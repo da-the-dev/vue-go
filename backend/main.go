@@ -1,23 +1,24 @@
 package main
 
 import (
-	db "backend/db"
-	f "fmt"
+	"backend/db"
+	"encoding/json"
+	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	posts := db.DBRead()
+	router := mux.NewRouter()
 
-	newPost := db.Post{
-		ID:    "2",
-		Title: "new title",
-		Body:  "new body",
-	}
+	router.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(rw).Encode("Hi")
+	}).Methods("GET")
 
-	f.Printf("DB length before append: %d\n", len(posts))
+	router.HandleFunc("/posts", func(rw http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(rw).Encode(db.DBRead())
+	}).Methods("GET")
 
-	f.Printf("\nAppending to DB:\n%#v\n\n", newPost)
-	db.DBAppendPost(&posts, newPost)
-
-	f.Printf("DB length after append: %d\n", len(posts))
+	println("Server started at port :3000. Connect: http://localhost:3000")
+	http.ListenAndServe(":3000", router)
 }
